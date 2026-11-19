@@ -26,9 +26,10 @@
  * Our pure in-memory collection of tasks.
  * Notice: We initialize this with two items matching our earlier preview,
  * but now they live entirely in JavaScript memory!
+ * We use 'let' instead of 'const' so we can reassign the array when filtering/deleting.
  * @type {TodoItem[]}
  */
-const todos = [
+let todos = [
   {
     id: "todo-1",
     text: "Review project requirements and guidelines",
@@ -50,8 +51,10 @@ const todos = [
  *
  * Why querySelector?
  * 'document.querySelector()' accepts standard CSS selectors (like '#todo-list'
- * or '.todo-form') and returns the first matching element.
+ * or '#todo-form') and returns the first matching element.
  */
+const todoFormElement = document.querySelector("#todo-form");
+const todoInputElement = document.querySelector("#todo-input");
 const todoListElement = document.querySelector("#todo-list");
 const emptyStateElement = document.querySelector("#empty-state");
 
@@ -105,6 +108,7 @@ function createTodoElement(todo) {
   const deleteButton = document.createElement("button");
   deleteButton.type = "button";
   deleteButton.className = "btn btn--danger btn--small";
+  deleteButton.dataset.action = "delete";
   deleteButton.textContent = "Delete";
   // Accessible name for assistive screen readers
   deleteButton.setAttribute("aria-label", `Delete "${todo.text}"`);
@@ -148,8 +152,120 @@ function renderTodos() {
 }
 
 // =============================================================================
-// 4. INITIALIZATION
+// 4. EVENT HANDLERS & ACTIONS
 // =============================================================================
 
-// Perform initial render on script load to display the in-memory tasks
+/**
+ * Handles the 'submit' event from the task creation form.
+ *
+ * Why listen to 'submit' on the <form> instead of 'click' on the <button>?
+ * 1. Accessibility: Pressing the 'Enter' key inside the input automatically
+ *    triggers the form's 'submit' event.
+ * 2. Form Validation: The browser's native 'required' attribute validates first.
+ *    If the input is empty, the browser warns the user and never fires 'submit'.
+ *
+ * @param {SubmitEvent} event - The native browser form submission event.
+ */
+function handleAddTodo(event) {
+  // CRUCIAL: Stop default browser navigation!
+  // By default, forms submit data to the current URL and reload the entire page.
+  // 'preventDefault()' tells the browser: "I will handle this in JavaScript memory, do NOT refresh."
+  event.preventDefault();
+
+  if (!todoInputElement) {
+    return;
+  }
+
+  // 1. Extract and sanitize input text
+  // '.trim()' strips leading and trailing invisible spaces (e.g., "   hello   " -> "hello")
+  const taskText = todoInputElement.value.trim();
+
+  // Guard against blank submissions (e.g. if user just pressed spaces)
+  if (!taskText) {
+    return;
+  }
+
+  // 2. Create the new task object for memory
+  // 'crypto.randomUUID()' is a modern, built-in browser API that generates
+  // a guaranteed unique identifier string (e.g. "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d").
+  const newTodo = {
+    id: `todo-${crypto.randomUUID()}`,
+    text: taskText,
+    completed: false,
+  };
+
+  // 3. Update our in-memory data (The Recipe)
+  // Non-mutating update or array push. We push the new item to our memory array.
+  todos.push(newTodo);
+
+  // 4. Tell the Chef to re-render the screen (The Meal)
+  renderTodos();
+
+  // 5. Reset the input field so it's clean and ready for the next task
+  todoInputElement.value = "";
+  // Keep the keyboard cursor active in the input box for rapid typing
+  todoInputElement.focus();
+}
+
+/**
+ * Handles clicks within the task list container.
+ *
+ * Pattern: Event Delegation
+ * -------------------------
+ * What is Event Delegation?
+ * Instead of attaching individual click listeners to every single delete button
+ * (which requires adding and removing listeners every time tasks are created or destroyed),
+ * we attach a SINGLE click listener to the parent <ul> container!
+ *
+ * When any button inside the <ul> is clicked, the event naturally "bubbles" up to the <ul>.
+ * We check if the clicked target was a delete button. If so, we read the item ID
+ * from the parent <li> and update our in-memory data.
+ *
+ * @param {MouseEvent} event - The click event.
+ */
+function handleListClick(event) {
+  // Check if what was clicked has data-action="delete"
+  // 'event.target' is the exact HTML element the user clicked on.
+  // '.closest()' searches upward from the clicked element to find a matching selector.
+  const targetElement = event.target;
+  if (!(targetElement instanceof HTMLElement)) {
+    return;
+  }
+
+  const deleteButton = targetElement.closest('[data-action="delete"]');
+  if (!deleteButton) {
+    // If the click wasn't on or inside a delete button, ignore it
+    return;
+  }
+
+  // Find the parent <li> to get its unique task ID
+  const listItem = deleteButton.closest(".todo-item");
+  if (!(listItem instanceof HTMLElement)) {
+    return;
+  }
+
+  const todoId = listItem.dataset.id;
+  if (!todoId) {
+    return;
+  }
+
+  // Update State (The Recipe): Filter out the task with this ID
+  // '.filter()' returns a brand new array keeping every item EXCEPT the one matching todoId
+  todos = todos.filter((todo) => todo.id !== todoId);
+
+  // Tell the Chef to re-render the screen (The Meal)
+  renderTodos();
+}
+
+// =============================================================================
+// 5. INITIALIZATION & EVENT LISTENERS
+// =============================================================================
+
+// Attach the submit event listener to the form element
+todoFormElement?.addEventListener("submit", handleAddTodo);
+
+// Attach the delegated click listener to the <ul> list
+todoListElement?.addEventListener("click", handleListClick);
+
+// Perform initial render on script load to display initial in-memory tasks
 renderTodos();
