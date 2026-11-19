@@ -208,38 +208,32 @@ function handleAddTodo(event) {
 }
 
 /**
- * Handles clicks within the task list container.
+ * Handles clicks and interactions within the task list container.
  *
  * Pattern: Event Delegation
  * -------------------------
  * What is Event Delegation?
- * Instead of attaching individual click listeners to every single delete button
- * (which requires adding and removing listeners every time tasks are created or destroyed),
- * we attach a SINGLE click listener to the parent <ul> container!
+ * Instead of attaching individual event listeners to every single delete button
+ * and checkbox (which requires adding and removing listeners every time tasks
+ * are created or destroyed), we attach a SINGLE listener to the parent <ul> container!
  *
- * When any button inside the <ul> is clicked, the event naturally "bubbles" up to the <ul>.
- * We check if the clicked target was a delete button. If so, we read the item ID
- * from the parent <li> and update our in-memory data.
+ * When any button or checkbox inside the <ul> is interacted with, the event
+ * naturally "bubbles" up the DOM tree to the <ul>.
  *
- * @param {MouseEvent} event - The click event.
+ * We inspect 'event.target' to see what was clicked:
+ * 1. Was it a Delete button? -> Remove task from memory and re-render.
+ * 2. Was it a Checkbox? -> Toggle 'completed' state in memory and re-render.
+ *
+ * @param {Event} event - The browser DOM event.
  */
-function handleListClick(event) {
-  // Check if what was clicked has data-action="delete"
-  // 'event.target' is the exact HTML element the user clicked on.
-  // '.closest()' searches upward from the clicked element to find a matching selector.
+function handleListChange(event) {
   const targetElement = event.target;
   if (!(targetElement instanceof HTMLElement)) {
     return;
   }
 
-  const deleteButton = targetElement.closest('[data-action="delete"]');
-  if (!deleteButton) {
-    // If the click wasn't on or inside a delete button, ignore it
-    return;
-  }
-
-  // Find the parent <li> to get its unique task ID
-  const listItem = deleteButton.closest(".todo-item");
+  // Find the parent <li> container to identify which task was interacted with
+  const listItem = targetElement.closest(".todo-item");
   if (!(listItem instanceof HTMLElement)) {
     return;
   }
@@ -249,12 +243,33 @@ function handleListClick(event) {
     return;
   }
 
-  // Update State (The Recipe): Filter out the task with this ID
-  // '.filter()' returns a brand new array keeping every item EXCEPT the one matching todoId
-  todos = todos.filter((todo) => todo.id !== todoId);
+  // --- ACTION 1: TOGGLE TASK COMPLETION (Checkbox) ---
+  // If the user checked or unchecked a checkbox:
+  if (targetElement instanceof HTMLInputElement && targetElement.type === "checkbox") {
+    // Non-mutating update (Modern JS Rule):
+    // Use .map() to return a brand new array where only the targeted task's
+    // 'completed' property is inverted (true becomes false, false becomes true).
+    todos = todos.map((todo) => {
+      if (todo.id === todoId) {
+        return { ...todo, completed: targetElement.checked };
+      }
+      return todo;
+    });
 
-  // Tell the Chef to re-render the screen (The Meal)
-  renderTodos();
+    // Tell the Chef to re-render the screen so styles (e.g. strikethrough) update
+    renderTodos();
+    return;
+  }
+
+  // --- ACTION 2: DELETE TASK (Button) ---
+  const deleteButton = targetElement.closest('[data-action="delete"]');
+  if (deleteButton) {
+    // Filter out the task with this ID from memory
+    todos = todos.filter((todo) => todo.id !== todoId);
+
+    // Tell the Chef to re-render the screen
+    renderTodos();
+  }
 }
 
 // =============================================================================
@@ -264,8 +279,11 @@ function handleListClick(event) {
 // Attach the submit event listener to the form element
 todoFormElement?.addEventListener("submit", handleAddTodo);
 
-// Attach the delegated click listener to the <ul> list
-todoListElement?.addEventListener("click", handleListClick);
+// Attach delegated listeners to the <ul> list:
+// - 'click' catches the Delete button clicks
+// - 'change' catches the checkbox state toggles reliably across mouse and keyboard
+todoListElement?.addEventListener("click", handleListChange);
+todoListElement?.addEventListener("change", handleListChange);
 
 // Perform initial render on script load to display initial in-memory tasks
 renderTodos();
