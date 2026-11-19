@@ -125,6 +125,27 @@
         when they occur, but politely waits until the user is not in the middle of typing or speaking.
       -->
       <section class="todo-list-container" aria-label="Current Tasks">
+        <!--
+          Task Summary & Counters:
+          Displays live computed metrics: total tasks, active tasks, and completed tasks.
+          Uses semantic <output> elements to indicate calculated values to screen readers.
+        -->
+        <header class="todo-summary" id="todo-summary" aria-label="Task statistics">
+          <p class="todo-summary__count">
+            <span class="todo-summary__metric">
+              Total: <output id="count-total">0</output>
+            </span>
+            <span class="todo-summary__divider" aria-hidden="true">•</span>
+            <span class="todo-summary__metric">
+              Active: <output id="count-active">0</output>
+            </span>
+            <span class="todo-summary__divider" aria-hidden="true">•</span>
+            <span class="todo-summary__metric">
+              Completed: <output id="count-completed">0</output>
+            </span>
+          </p>
+        </header>
+
         <ul id="todo-list" class="todo-list" aria-live="polite">
           <!-- Dynamically populated from JavaScript memory via app.js -->
         </ul>

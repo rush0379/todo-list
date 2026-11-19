@@ -57,6 +57,10 @@ const todoFormElement = document.querySelector("#todo-form");
 const todoInputElement = document.querySelector("#todo-input");
 const todoListElement = document.querySelector("#todo-list");
 const emptyStateElement = document.querySelector("#empty-state");
+const todoSummaryElement = document.querySelector("#todo-summary");
+const countTotalElement = document.querySelector("#count-total");
+const countActiveElement = document.querySelector("#count-active");
+const countCompletedElement = document.querySelector("#count-completed");
 
 // =============================================================================
 // 3. RENDER FUNCTION (View Layer)
@@ -120,6 +124,35 @@ function createTodoElement(todo) {
 }
 
 /**
+ * Updates the summary counter elements with live statistics calculated from memory.
+ *
+ * Single Source of Truth Concept:
+ * Notice we do NOT manually increment or decrement a counter variable (+1 / -1)
+ * across multiple event handlers.
+ * Instead, whenever anything changes, we calculate the exact totals directly
+ * from the 'todos' array! This guarantees the counts can never get out of sync.
+ */
+function updateSummaryCounters() {
+  if (!countTotalElement || !countActiveElement || !countCompletedElement || !todoSummaryElement) {
+    return;
+  }
+
+  const total = todos.length;
+  // Count how many tasks have completed: true
+  const completed = todos.filter((todo) => todo.completed).length;
+  // Active is simply total minus completed
+  const active = total - completed;
+
+  // Update text values safely
+  countTotalElement.textContent = String(total);
+  countActiveElement.textContent = String(active);
+  countCompletedElement.textContent = String(completed);
+
+  // Hide the summary row if there are no tasks at all to keep UI clean
+  todoSummaryElement.hidden = total === 0;
+}
+
+/**
  * Synchronizes the DOM with the current in-memory 'todos' array.
  *
  * How replaceChildren() works:
@@ -132,22 +165,25 @@ function renderTodos() {
     return;
   }
 
-  // 1. Check if we have any tasks in memory
+  // 1. Update the computed metrics (total, active, completed)
+  updateSummaryCounters();
+
+  // 2. Check if we have any tasks in memory
   const hasTodos = todos.length > 0;
 
-  // 2. Update empty state visibility using the native 'hidden' attribute
+  // 3. Update empty state visibility using the native 'hidden' attribute
   emptyStateElement.hidden = hasTodos;
 
-  // 3. If there are no tasks, empty the list element and exit early
+  // 4. If there are no tasks, empty the list element and exit early
   if (!hasTodos) {
     todoListElement.replaceChildren();
     return;
   }
 
-  // 4. Map each data object in our in-memory array to a real DOM element
+  // 5. Map each data object in our in-memory array to a real DOM element
   const todoElements = todos.map((todo) => createTodoElement(todo));
 
-  // 5. Atomically mount all elements into the <ul>
+  // 6. Atomically mount all elements into the <ul>
   todoListElement.replaceChildren(...todoElements);
 }
 
