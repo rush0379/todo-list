@@ -31,6 +31,14 @@
     before the body renders, preventing a "Flash of Unstyled Content" (FOUC).
   -->
   <link rel="stylesheet" href="styles.css">
+
+  <!--
+    Application Script:
+    Using 'defer' ensures the script executes only after the HTML document
+    is fully parsed, while allowing it to run smoothly on both local 'file:///'
+    URLs and web servers without CORS restrictions.
+  -->
+  <script defer src="app.js"></script>
 </head>
 <body>
   <!--
@@ -119,53 +127,7 @@
       -->
       <section class="todo-list-container" aria-label="Current Tasks">
         <ul id="todo-list" class="todo-list" aria-live="polite">
-          <!--
-            Sample Item 1 (Active):
-            Demonstrates an uncompleted task layout.
-            When JavaScript is integrated in subsequent steps, items will be dynamically generated.
-            For Step 1, these static items allow us to preview and verify layout, alignment, and responsiveness.
-          -->
-          <li class="todo-item" data-id="sample-1">
-            <label class="todo-item__content">
-              <!--
-                Checkbox control:
-                Styled cleanly using modern CSS 'accent-color'.
-              -->
-              <input type="checkbox" class="todo-item__checkbox">
-              <span class="todo-item__text">Review project requirements and guidelines</span>
-            </label>
-            <!--
-              Action Button:
-              'type="button"' is essential here! Without it, buttons inside forms or interactive
-              lists might default to 'type="submit"' and inadvertently attempt to submit the form.
-              'aria-label' gives screen readers full context on which task this button deletes.
-            -->
-            <button
-              type="button"
-              class="btn btn--danger btn--small"
-              aria-label="Delete 'Review project requirements and guidelines'"
-            >
-              Delete
-            </button>
-          </li>
-
-          <!--
-            Sample Item 2 (Completed):
-            Demonstrates a completed task layout (checked checkbox and strikethrough styling).
-          -->
-          <li class="todo-item todo-item--completed" data-id="sample-2">
-            <label class="todo-item__content">
-              <input type="checkbox" class="todo-item__checkbox" checked>
-              <span class="todo-item__text">Set up HTML structure and CSS foundation</span>
-            </label>
-            <button
-              type="button"
-              class="btn btn--danger btn--small"
-              aria-label="Delete 'Set up HTML structure and CSS foundation'"
-            >
-              Delete
-            </button>
-          </li>
+          <!-- Dynamically populated from JavaScript memory via app.js -->
         </ul>
 
         <!--
