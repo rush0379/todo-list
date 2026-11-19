@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<!--
+  HTML5 Standard Document:
+  'lang="en"' specifies the primary language of the document, which helps screen
+  readers pick the right speech synthesizer and helps search engines index content.
+-->
+<html lang="en">
+<head>
+  <!--
+    Character Encoding:
+    UTF-8 handles virtually all human languages, symbols, and emojis.
+    It must be within the first 1024 bytes of the document so the browser
+    decodes text properly from the very beginning.
+  -->
+  <meta charset="UTF-8">
+
+  <!--
+    Responsive Viewport Meta Tag:
+    Without this, mobile browsers pretend to be a ~980px desktop screen and zoom out,
+    making text tiny. 'width=device-width' sets the viewport width to the device's physical
+    width, and 'initial-scale=1.0' ensures a 1:1 pixel ratio on first load.
+    Note: HTML5 void elements (like <meta>, <link>, <input>) do NOT need a closing slash (/>).
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Task Tracker</title>
+
+  <!--
+    External Stylesheet:
+    Linking styles via <link> inside <head> ensures styles are loaded and parsed
+    before the body renders, preventing a "Flash of Unstyled Content" (FOUC).
+  -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!--
+    Semantic Landmark: <header>
+    Identifies introductory content or site banners. Using semantic landmarks gives
+    assistive technology (like screen readers) the ability to jump directly across page sections.
+  -->
+  <header class="app-header">
+    <h1 class="app-title">Task Tracker</h1>
+    <p class="app-subtitle">A clean, focused in-memory todo list</p>
+  </header>
+
+  <!--
+    Semantic Landmark: <main>
+    There should be only one visible <main> landmark per document. It represents
+    the central, dominant functionality or content of the page.
+  -->
+  <main class="app-main">
+    <!--
+      Semantic Landmark: <section>
+      HTML rules state a <section> must have an identifiable heading.
+      We connect this section to its heading using 'aria-labelledby="tracker-heading"'.
+    -->
+    <section class="tracker-card" aria-labelledby="tracker-heading">
+      <!--
+        Heading level 2 for the section:
+        This heading is visually hidden using CSS (.visually-hidden) because sighted users
+        understand the card's purpose from visual context, but screen reader users still
+        receive the structural outline heading.
+      -->
+      <h2 id="tracker-heading" class="visually-hidden">Task Manager</h2>
+
+      <!--
+        Form Container:
+        Wrapping user inputs in a <form> provides native browser behaviors out of the box:
+        1. Submitting via the Enter key works automatically.
+        2. Native validation (e.g. 'required') blocks submission if empty.
+        3. Allows JavaScript to listen to a single 'submit' event.
+      -->
+      <form id="todo-form" class="todo-form">
+        <!--
+          Accessible Form Label:
+          Every form control MUST have an accessible name.
+          Using 'for="todo-input"' explicitly links this label to the input with 'id="todo-input"'.
+          Clicking this label will also automatically focus the input field.
+        -->
+        <label for="todo-input" class="todo-form__label">Task description</label>
+
+        <!--
+          Flex row for input and action button:
+          Allows the input field to expand fluidly while the button maintains its intrinsic width.
+        -->
+        <div class="todo-form__controls">
+          <!--
+            Text Input:
+            - 'required': Prevents empty submissions natively without needing JS validation first.
+            - 'autocomplete="off"': Prevents the browser from showing previous search/history popups
+              that might visually obstruct the todo list below.
+            - 'maxlength="120"': Provides a sensible safeguard against overly long inputs.
+          -->
+          <input
+            type="text"
+            id="todo-input"
+            name="todo-input"
+            class="todo-form__input"
+            placeholder="What needs to be done?"
+            required
+            maxlength="120"
+            autocomplete="off"
+          >
+
+          <!--
+            Submit Button:
+            'type="submit"' makes this the default submission button for the parent <form>.
+          -->
+          <button type="submit" class="btn btn--primary">
+            Add Task
+          </button>
+        </div>
+      </form>
+
+      <!--
+        Task List Section:
+        'aria-live="polite"' tells screen readers to announce additions and removals
+        when they occur, but politely waits until the user is not in the middle of typing or speaking.
+      -->
+      <section class="todo-list-container" aria-label="Current Tasks">
+        <ul id="todo-list" class="todo-list" aria-live="polite">
+          <!--
+            Sample Item 1 (Active):
+            Demonstrates an uncompleted task layout.
+            When JavaScript is integrated in subsequent steps, items will be dynamically generated.
+            For Step 1, these static items allow us to preview and verify layout, alignment, and responsiveness.
+          -->
+          <li class="todo-item" data-id="sample-1">
+            <label class="todo-item__content">
+              <!--
+                Checkbox control:
+                Styled cleanly using modern CSS 'accent-color'.
+              -->
+              <input type="checkbox" class="todo-item__checkbox">
+              <span class="todo-item__text">Review project requirements and guidelines</span>
+            </label>
+            <!--
+              Action Button:
+              'type="button"' is essential here! Without it, buttons inside forms or interactive
+              lists might default to 'type="submit"' and inadvertently attempt to submit the form.
+              'aria-label' gives screen readers full context on which task this button deletes.
+            -->
+            <button
+              type="button"
+              class="btn btn--danger btn--small"
+              aria-label="Delete 'Review project requirements and guidelines'"
+            >
+              Delete
+            </button>
+          </li>
+
+          <!--
+            Sample Item 2 (Completed):
+            Demonstrates a completed task layout (checked checkbox and strikethrough styling).
+          -->
+          <li class="todo-item todo-item--completed" data-id="sample-2">
+            <label class="todo-item__content">
+              <input type="checkbox" class="todo-item__checkbox" checked>
+              <span class="todo-item__text">Set up HTML structure and CSS foundation</span>
+            </label>
+            <button
+              type="button"
+              class="btn btn--danger btn--small"
+              aria-label="Delete 'Set up HTML structure and CSS foundation'"
+            >
+              Delete
+            </button>
+          </li>
+        </ul>
+
+        <!--
+          Empty State Message:
+          Hidden by default with the native HTML 'hidden' attribute because we currently have sample tasks.
+          When the task list is empty, removing 'hidden' will display this friendly message.
+        -->
+        <p id="empty-state" class="empty-state" hidden>
+          No tasks yet. Add one above to get started!
+        </p>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
