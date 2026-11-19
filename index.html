@@ -34,9 +34,8 @@
 
   <!--
     Application Script:
-    Using 'defer' ensures the script executes only after the HTML document
-    is fully parsed, while allowing it to run smoothly on both local 'file:///'
-    URLs and web servers without CORS restrictions.
+    'defer' ensures the script executes after the HTML document is parsed,
+    and runs cleanly even when opening directly via file:/// in local browsers.
   -->
   <script defer src="app.js"></script>
 </head>
