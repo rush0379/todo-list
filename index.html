@@ -34,10 +34,11 @@
 
   <!--
     Application Script:
-    'defer' ensures the script executes after the HTML document is parsed,
-    and runs cleanly even when opening directly via file:/// in local browsers.
+    Default to modern ES module script (<script type="module">).
+    Modules automatically defer execution until the HTML document has finished
+    parsing without needing an explicit 'defer' attribute, and run in strict mode.
   -->
-  <script defer src="app.js"></script>
+  <script type="module" src="./app.js"></script>
 </head>
 <body>
   <!--
@@ -52,114 +53,90 @@
 
   <!--
     Semantic Landmark: <main>
-    There should be only one visible <main> landmark per document. It represents
-    the central, dominant functionality or content of the page.
+    The central, dominant landmark of the page, styled directly as the card container.
   -->
-  <main class="app-main">
+  <main class="app-main tracker-card">
     <!--
-      Semantic Landmark: <section>
-      HTML rules state a <section> must have an identifiable heading.
-      We connect this section to its heading using 'aria-labelledby="tracker-heading"'.
+      Form Container:
+      Wrapping user inputs in a <form> provides native browser behaviors out of the box:
+      1. Submitting via the Enter key works automatically.
+      2. Native validation (e.g. 'required') blocks submission if empty.
+      3. Allows JavaScript to listen to a single 'submit' event.
     -->
-    <section class="tracker-card" aria-labelledby="tracker-heading">
+    <form id="todo-form" class="todo-form">
       <!--
-        Heading level 2 for the section:
-        This heading is visually hidden using CSS (.visually-hidden) because sighted users
-        understand the card's purpose from visual context, but screen reader users still
-        receive the structural outline heading.
+        Accessible Form Label:
+        Every form control MUST have an accessible name.
+        Using 'for="todo-input"' explicitly links this label to the input with 'id="todo-input"'.
+        Clicking this label will also automatically focus the input field.
       -->
-      <h2 id="tracker-heading" class="visually-hidden">Task Manager</h2>
-
-      <!--
-        Form Container:
-        Wrapping user inputs in a <form> provides native browser behaviors out of the box:
-        1. Submitting via the Enter key works automatically.
-        2. Native validation (e.g. 'required') blocks submission if empty.
-        3. Allows JavaScript to listen to a single 'submit' event.
-      -->
-      <form id="todo-form" class="todo-form">
-        <!--
-          Accessible Form Label:
-          Every form control MUST have an accessible name.
-          Using 'for="todo-input"' explicitly links this label to the input with 'id="todo-input"'.
-          Clicking this label will also automatically focus the input field.
-        -->
-        <label for="todo-input" class="todo-form__label">Task description</label>
-
-        <!--
-          Flex row for input and action button:
-          Allows the input field to expand fluidly while the button maintains its intrinsic width.
-        -->
-        <div class="todo-form__controls">
-          <!--
-            Text Input:
-            - 'required': Prevents empty submissions natively without needing JS validation first.
-            - 'autocomplete="off"': Prevents the browser from showing previous search/history popups
-              that might visually obstruct the todo list below.
-            - 'maxlength="120"': Provides a sensible safeguard against overly long inputs.
-          -->
-          <input
-            type="text"
-            id="todo-input"
-            name="todo-input"
-            class="todo-form__input"
-            placeholder="What needs to be done?"
-            required
-            maxlength="120"
-            autocomplete="off"
-          >
-
-          <!--
-            Submit Button:
-            'type="submit"' makes this the default submission button for the parent <form>.
-          -->
-          <button type="submit" class="btn btn--primary">
-            Add Task
-          </button>
-        </div>
-      </form>
+      <label for="todo-input" class="todo-form__label">Task description</label>
 
       <!--
-        Task List Section:
-        'aria-live="polite"' tells screen readers to announce additions and removals
-        when they occur, but politely waits until the user is not in the middle of typing or speaking.
+        Text Input:
+        - 'required': Prevents empty submissions natively without needing JS validation first.
+        - 'autocomplete="off"': Prevents the browser from showing previous search/history popups
+          that might visually obstruct the todo list below.
+        - 'maxlength="120"': Provides a sensible safeguard against overly long inputs.
       -->
-      <section class="todo-list-container" aria-label="Current Tasks">
-        <!--
-          Task Summary & Counters:
-          Displays live computed metrics: total tasks, active tasks, and completed tasks.
-          Uses semantic <output> elements to indicate calculated values to screen readers.
-        -->
-        <header class="todo-summary" id="todo-summary" aria-label="Task statistics">
-          <p class="todo-summary__count">
-            <span class="todo-summary__metric">
-              Total: <output id="count-total">0</output>
-            </span>
-            <span class="todo-summary__divider" aria-hidden="true">•</span>
-            <span class="todo-summary__metric">
-              Active: <output id="count-active">0</output>
-            </span>
-            <span class="todo-summary__divider" aria-hidden="true">•</span>
-            <span class="todo-summary__metric">
-              Completed: <output id="count-completed">0</output>
-            </span>
-          </p>
-        </header>
+      <input
+        type="text"
+        id="todo-input"
+        name="todo-input"
+        class="todo-form__input"
+        placeholder="What needs to be done?"
+        required
+        maxlength="120"
+        autocomplete="off"
+      >
 
-        <ul id="todo-list" class="todo-list" aria-live="polite">
-          <!-- Dynamically populated from JavaScript memory via app.js -->
-        </ul>
+      <!--
+        Submit Button:
+        'type="submit"' makes this the default submission button for the parent <form>.
+      -->
+      <button type="submit" class="btn btn--primary">
+        Add Task
+      </button>
+    </form>
 
-        <!--
-          Empty State Message:
-          Hidden by default with the native HTML 'hidden' attribute because we currently have sample tasks.
-          When the task list is empty, removing 'hidden' will display this friendly message.
-        -->
-        <p id="empty-state" class="empty-state" hidden>
-          No tasks yet. Add one above to get started!
-        </p>
-      </section>
-    </section>
+    <!--
+      Task Summary & Counters:
+      Displays live computed metrics: total tasks, active tasks, and completed tasks.
+      Uses semantic <output> elements to indicate calculated values to screen readers.
+    -->
+    <header class="todo-summary" id="todo-summary" aria-label="Task statistics">
+      <p class="todo-summary__count">
+        <span class="todo-summary__metric">
+          Total: <output id="count-total">0</output>
+        </span>
+        <span class="todo-summary__divider" aria-hidden="true">•</span>
+        <span class="todo-summary__metric">
+          Active: <output id="count-active">0</output>
+        </span>
+        <span class="todo-summary__divider" aria-hidden="true">•</span>
+        <span class="todo-summary__metric">
+          Completed: <output id="count-completed">0</output>
+        </span>
+      </p>
+    </header>
+
+    <!--
+      Task List:
+      'aria-live="polite"' tells screen readers to announce additions and removals
+      when they occur, but politely waits until the user is not in the middle of typing or speaking.
+    -->
+    <ul id="todo-list" class="todo-list" aria-live="polite">
+      <!-- Dynamically populated from JavaScript memory via app.js -->
+    </ul>
+
+    <!--
+      Empty State Message:
+      Hidden by default with the native HTML 'hidden' attribute because we currently have sample tasks.
+      When the task list is empty, removing 'hidden' will display this friendly message.
+    -->
+    <p id="empty-state" class="empty-state" hidden>
+      No tasks yet. Add one above to get started!
+    </p>
   </main>
 </body>
 </html>

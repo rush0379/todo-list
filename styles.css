@@ -225,12 +225,13 @@
 
   /*
     Form Layout:
-    Uses CSS Flexbox in 1D for clean alignment between input and action button.
+    Uses CSS Grid directly on <form> to cleanly place the label across the full
+    width on row 1, and the input + submit button on row 2 without any extra <div>.
   */
   .todo-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.625rem;
 
     .todo-form__label {
       font-size: 0.875rem;
@@ -238,23 +239,20 @@
       color: var(--text-muted);
     }
 
-    .todo-form__controls {
-      display: flex;
-      flex-direction: column;
-      gap: 0.625rem;
+    /*
+      Container Query:
+      When the card is at least 26rem (416px) wide, place the input and button
+      side-by-side on row 2, with the label spanning both columns above them.
+    */
+    @container tracker-card (inline-size >= 26rem) {
+      grid-template-columns: 1fr auto;
 
-      /*
-        Container Query:
-        When the parent card is at least 26rem (416px) wide, switch from a stacked
-        layout to an inline side-by-side row!
-      */
-      @container tracker-card (inline-size >= 26rem) {
-        flex-direction: row;
+      .todo-form__label {
+        grid-column: 1 / -1;
       }
     }
 
     .todo-form__input {
-      flex: 1; /* Expands to fill available horizontal space */
       padding-block: 0.625rem;
       padding-inline: 0.875rem;
       border: 1px solid var(--border-color);
@@ -321,17 +319,11 @@
   }
 
   /*
-    Task List Container & Items:
-  */
-  .todo-list-container {
-    margin-block-start: 1.5rem;
-  }
-
-  /*
     Task Summary Header:
     Displays status counters in a subtle, clean horizontal row above the list.
   */
   .todo-summary {
+    margin-block-start: 1.5rem;
     margin-block-end: 0.875rem;
     padding-block-end: 0.5rem;
     border-block-end: 1px solid var(--border-color);

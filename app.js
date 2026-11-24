@@ -231,8 +231,9 @@ function handleAddTodo(event) {
   };
 
   // 3. Update our in-memory data (The Recipe)
-  // Non-mutating update or array push. We push the new item to our memory array.
-  todos.push(newTodo);
+  // Non-mutating update (Modern JS Rule):
+  // Instead of in-place mutation (todos.push), create a new array with the spread operator.
+  todos = [...todos, newTodo];
 
   // 4. Tell the Chef to re-render the screen (The Meal)
   renderTodos();
